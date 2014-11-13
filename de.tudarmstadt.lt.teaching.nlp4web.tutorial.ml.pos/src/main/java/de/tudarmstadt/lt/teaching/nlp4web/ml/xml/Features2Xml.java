@@ -6,8 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cleartk.ml.feature.extractor.CleartkExtractor;
+import org.cleartk.ml.feature.extractor.CoveredTextExtractor;
 import org.cleartk.ml.feature.extractor.FeatureExtractor1;
-
+import org.cleartk.ml.feature.extractor.TypePathExtractor;
+import org.cleartk.ml.feature.extractor.CleartkExtractor.Following;
+import org.cleartk.ml.feature.extractor.CleartkExtractor.Preceding;
+import org.cleartk.ml.feature.function.CapitalTypeFeatureFunction;
+import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction;
+import org.cleartk.ml.feature.function.FeatureFunctionExtractor;
+import org.cleartk.ml.feature.function.LowerCaseFeatureFunction;
+import org.cleartk.ml.feature.function.NumericTypeFeatureFunction;
+import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction.Orientation;
 import com.thoughtworks.xstream.XStream;
 
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -19,6 +28,14 @@ public class Features2Xml {
         tokenFeatureExtractors = new ArrayList<FeatureExtractor1<Token>>();
 
 		//here begins your task !!!
+        TypePathExtractor<Token> stemExtractor = new TypePathExtractor<Token>(Token.class, "stem/value");
+        CharacterNgramFeatureFunction.Orientation fromRight = Orientation.RIGHT_TO_LEFT;
+        
+        tokenFeatureExtractors.add(new FeatureFunctionExtractor<Token>(
+                new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
+                new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
+                new CharacterNgramFeatureFunction(fromRight, 0, 2)));
+
 
 		XStream xstream = XStreamFactory.createXStream();
 		String x = xstream.toXML(tokenFeatureExtractors);
@@ -34,6 +51,8 @@ public class Features2Xml {
 		contextFeatureExtractors = new ArrayList<CleartkExtractor<Token, Token>>();
 
 		// here begins your task
+		contextFeatureExtractors.add(new CleartkExtractor<Token, Token>(Token.class,
+                new CoveredTextExtractor<Token>(), new Preceding(2), new Following(2)));
 
 		XStream xstream = XStreamFactory.createXStream();
 		String x = xstream.toXML(contextFeatureExtractors);
