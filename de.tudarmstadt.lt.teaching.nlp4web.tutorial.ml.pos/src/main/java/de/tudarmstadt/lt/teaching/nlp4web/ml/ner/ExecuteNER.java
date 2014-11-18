@@ -34,7 +34,7 @@ public class ExecuteNER {
 				FilesCollectionReader.getCollectionReaderWithSuffixes(
 						posTagFile.getAbsolutePath(),
 						ConllAnnotator.CONLL_VIEW, posTagFile.getName()),
-						createEngine(ConllAnnotator.class),
+						createEngine(ConllAnnotator.class)/*,
 						createEngine(SnowballStemmer.class,
 						SnowballStemmer.PARAM_LANGUAGE, language),
 						createEngine(
@@ -43,7 +43,7 @@ public class ExecuteNER {
 						DirectoryDataWriterFactory.PARAM_OUTPUT_DIRECTORY, modelDirectory,
 						DefaultSequenceDataWriterFactory.PARAM_DATA_WRITER_CLASS_NAME,
 						//MalletCrfStringOutcomeDataWriter.class)); // or 
-						CrfSuiteStringOutcomeDataWriter.class));
+						CrfSuiteStringOutcomeDataWriter.class)*/);
 	}
 
 	public static void trainModel(String modelDirectory) throws Exception {
@@ -71,12 +71,14 @@ public class ExecuteNER {
 		long start = System.currentTimeMillis();
 		String modelDirectory = "src/test/resources/model/";
 		String language = "en";
-		File posTagFile=   new File("src/main/resources/pos/wsj_pos.train_100");
-		File testPosFile = new File("src/main/resources/pos/wsj_pos.dev");
+		//File posTagFile=   new File("src/main/resources/pos/wsj_pos.train_100");
+		File nerTagFile=   new File("src/main/resources/ner/ner_eng.train");
+		//File testPosFile = new File("src/main/resources/pos/wsj_pos.dev");
+		File testNerFile = new File("src/main/resources/ner/ner_eng.dev");
 		new File(modelDirectory).mkdirs();
-		writeModel(posTagFile, modelDirectory,language);
+		writeModel(nerTagFile, modelDirectory,language);
 		trainModel(modelDirectory);
-		classifyTestFile(modelDirectory, testPosFile,language);
+		classifyTestFile(modelDirectory, testNerFile,language);
 		long now = System.currentTimeMillis();
 		UIMAFramework.getLogger().log(Level.INFO,"Time: "+(now-start)+"ms");
 	}

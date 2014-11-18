@@ -27,6 +27,7 @@ import org.apache.uima.resource.ResourceInitializationException;
  import org.cleartk.classifier.feature.function.NumericTypeFeatureFunction;*/
 import org.cleartk.ml.CleartkSequenceAnnotator;
 import org.cleartk.ml.Instance;
+import org.cleartk.ml.chunking.BioChunking;
 import org.cleartk.ml.feature.extractor.CleartkExtractor;
 import org.cleartk.ml.feature.extractor.CleartkExtractor.Following;
 import org.cleartk.ml.feature.extractor.CleartkExtractor.Preceding;
@@ -39,6 +40,7 @@ import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction.Orientation
 import org.cleartk.ml.feature.function.FeatureFunctionExtractor;
 import org.cleartk.ml.feature.function.LowerCaseFeatureFunction;
 import org.cleartk.ml.feature.function.NumericTypeFeatureFunction;
+import org.cleartk.ne.type.NamedEntityMention;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -64,6 +66,11 @@ public class NERAnnotator
 
     private CleartkExtractor<Token, Token> contextFeatureExtractor;
     private TypePathExtractor<Token> stemExtractor;
+    
+	private BioChunking<Token, NamedEntityMention> chunking = new BioChunking<Token, NamedEntityMention>(
+	        Token.class,
+	        NamedEntityMention.class,
+	        "mentionType");
 
     @SuppressWarnings("unchecked")
     @Override
@@ -119,13 +126,19 @@ public class NERAnnotator
                 this.dataWriter.write(instances);
             }
             else {
-                List<String> posTags = this.classify(instances);
-                int i = 0;
+            	// get the predicted BIO outcome labels from the classifier
+                List<String> outcomesTags = this.classify(instances);
+               	// create the NamedEntityMention annotations in the CAS
+                List<NamedEntityMention> chunks = this.chunking.createChunks(jCas, tokens, outcomesTags);
+
+
+                
+               /* int i = 0;
                 for (Token token : tokens) {
                     POS pos = new POS(jCas, token.getBegin(), token.getEnd());
-                    pos.setPosValue(posTags.get(i++));
+                    pos.setPosValue(nerTags.get(i++));
                     token.setPos(pos);
-                }
+                }*/
             }
         }
 

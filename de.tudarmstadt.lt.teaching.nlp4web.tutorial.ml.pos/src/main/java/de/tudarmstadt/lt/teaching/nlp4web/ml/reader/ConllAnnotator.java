@@ -9,6 +9,7 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
+import org.cleartk.ne.type.NamedEntityMention;
 
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
@@ -46,6 +47,8 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 		Token token = null;
 		POS posTag;
 		String pos;
+		NamedEntityMention nerTag;
+		String ner;
 		boolean initSentence = false;
 		StringBuffer docText = new StringBuffer();
 		for (String line : tokens) {
@@ -62,11 +65,12 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				String[] tag = line.split("\\s");
 				String word = tag[0];
 				pos = tag.length >= 2 ? tag[1] : "";
+				ner = tag.length >= 3 ? tag[2] : "";
 				docText.append(word);
 				if (!word.matches("^(\\p{Punct}).*")) {
 					token = new Token(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
-
+					nerTag = new NamedEntityMention(docView, idx, idx + word.length());
 					docText.append(" ");
 					idx++;
 				} else {
@@ -77,6 +81,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 					}
 					token = new Token(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
+					nerTag = new NamedEntityMention(docView, idx, idx + word.length());
 				}
 				//start new sentence
 				if (initSentence) {
@@ -90,12 +95,21 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				posTag.setPosValue(pos);
 				token.setPos(posTag);
 				token.addToIndexes();
+				//set NER value and add NER to the index
+				nerTag.setMentionType(ner);
+				nerTag.addToIndexes();
 				logger.log(
 						Level.FINE,
 						"Token: ["
 								+ docText.substring(token.getBegin(),
 										token.getEnd()) + "]"
 								+ token.getBegin() + "\t" + token.getEnd());
+				logger.log(
+						Level.INFO,
+						"NERTag: ["
+								+ docText.substring(nerTag.getBegin(),
+										nerTag.getEnd()) + "]"
+								+ nerTag.getBegin() + "\t" + nerTag.getEnd() + "\t" + nerTag.getMentionType());
 
 			}
 		}
