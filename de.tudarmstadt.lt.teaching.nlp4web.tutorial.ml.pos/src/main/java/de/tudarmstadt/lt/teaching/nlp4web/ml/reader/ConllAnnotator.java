@@ -65,7 +65,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				String[] tag = line.split("\\s");
 				String word = tag[0];
 				pos = tag.length >= 2 ? tag[1] : "";
-				ner = tag.length >= 3 ? tag[2] : "";
+				ner = tag.length >= 4 ? tag[3] : "";
 				docText.append(word);
 				if (!word.matches("^(\\p{Punct}).*")) {
 					token = new Token(docView, idx, idx + word.length());

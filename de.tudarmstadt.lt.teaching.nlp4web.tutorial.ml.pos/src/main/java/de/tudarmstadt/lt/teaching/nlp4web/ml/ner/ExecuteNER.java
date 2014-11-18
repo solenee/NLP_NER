@@ -55,7 +55,7 @@ public class ExecuteNER {
 		runPipeline(FilesCollectionReader.getCollectionReaderWithSuffixes(
 				testPosFile.getAbsolutePath(),
 				ConllAnnotator.CONLL_VIEW, testPosFile.getName()),
-				createEngine(ConllAnnotator.class),
+				createEngine(ConllAnnotator.class)/*,
 				createEngine(SnowballStemmer.class,
 						SnowballStemmer.PARAM_LANGUAGE, language),
 						createEngine(NERAnnotator.class,
@@ -63,7 +63,7 @@ public class ExecuteNER {
 				createEngine(AnalyzeFeatures.class,
 						AnalyzeFeatures.PARAM_INPUT_FILE, testPosFile.getAbsolutePath(),
 						AnalyzeFeatures.PARAM_TOKEN_VALUE_PATH,"pos/PosValue")
-			);
+			*/);
 	}
 
 	public static void main(String[] args) throws Exception {
