@@ -11,6 +11,7 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.cleartk.ne.type.NamedEntityMention;
 
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.TokenNer;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -44,7 +45,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 		String[] tokens = tbText.split("(\r\n|\n)");
 		Sentence sentence = null;
 		int idx = 0;
-		Token token = null;
+		TokenNer token = null;
 		POS posTag;
 		String pos;
 		NamedEntityMention nerTag;
@@ -68,7 +69,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				ner = tag.length >= 4 ? tag[3] : "";
 				docText.append(word);
 				if (!word.matches("^(\\p{Punct}).*")) {
-					token = new Token(docView, idx, idx + word.length());
+					token = new TokenNer(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
 					nerTag = new NamedEntityMention(docView, idx, idx + word.length());
 					docText.append(" ");
@@ -79,7 +80,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 						docText.deleteCharAt(idx - word.length());
 						idx--;
 					}
-					token = new Token(docView, idx, idx + word.length());
+					token = new TokenNer(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
 					nerTag = new NamedEntityMention(docView, idx, idx + word.length());
 				}
@@ -94,10 +95,10 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				//set POS value and add POS to the token and to the index
 				posTag.setPosValue(pos);
 				token.setPos(posTag);
-				token.addToIndexes();
 				//set NER value and add NER to the index
 				nerTag.setMentionType(ner);
-				nerTag.addToIndexes();
+				token.setNer(nerTag);
+				token.addToIndexes();
 				logger.log(
 						Level.FINE,
 						"Token: ["

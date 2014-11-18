@@ -110,14 +110,16 @@ public class NERAnnotator
         for (Sentence sentence : select(jCas, Sentence.class)) {
             List<Instance<String>> instances = new ArrayList<Instance<String>>();
             List<Token> tokens = selectCovered(jCas, Token.class, sentence);
-            for (Token token : tokens) {
+            List<TokenNer> tokensNer = new ArrayList<TokenNer>();
+            // TODO recuperation of TokenNer in tokens list
+            for (TokenNer token : tokensNer) {
 
                 Instance<String> instance = new Instance<String>();
                 instance.addAll(tokenFeatureExtractor.extract(jCas, token));
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
                 instance.addAll(stemExtractor.extract(jCas, token));
 
-                instance.setOutcome(token.getPos().getPosValue());
+                instance.setOutcome(token.getNer().getMentionType());
                 // add the instance to the list !!!
                 instances.add(instance);
             }
@@ -129,16 +131,13 @@ public class NERAnnotator
             	// get the predicted BIO outcome labels from the classifier
                 List<String> outcomesTags = this.classify(instances);
                	// create the NamedEntityMention annotations in the CAS
-                List<NamedEntityMention> chunks = this.chunking.createChunks(jCas, tokens, outcomesTags);
-
-
-                
-               /* int i = 0;
-                for (Token token : tokens) {
-                    POS pos = new POS(jCas, token.getBegin(), token.getEnd());
-                    pos.setPosValue(nerTags.get(i++));
-                    token.setPos(pos);
-                }*/
+                // List<NamedEntityMention> chunks = this.chunking.createChunks(jCas, tokens, outcomesTags);
+                int i = 0;
+                for (TokenNer token : tokensNer) {
+                    NamedEntityMention ner = new NamedEntityMention(jCas, token.getBegin(), token.getEnd());
+                    ner.setMentionType(outcomesTags.get(i++));
+                    token.setNer(ner);
+                }
             }
         }
 

@@ -27,14 +27,14 @@ import de.tudarmstadt.ukp.dkpro.core.snowball.SnowballStemmer;
 
 public class ExecuteNER {
 
-	public static void writeModel(File posTagFile, String modelDirectory, String language)
+	public static void writeModel(File nerTagFile, String modelDirectory, String language)
 			throws ResourceInitializationException, UIMAException, IOException {
 
 		runPipeline(
 				FilesCollectionReader.getCollectionReaderWithSuffixes(
-						posTagFile.getAbsolutePath(),
-						ConllAnnotator.CONLL_VIEW, posTagFile.getName()),
-						createEngine(ConllAnnotator.class)/*,
+						nerTagFile.getAbsolutePath(),
+						ConllAnnotator.CONLL_VIEW, nerTagFile.getName()),
+						createEngine(ConllAnnotator.class),
 						createEngine(SnowballStemmer.class,
 						SnowballStemmer.PARAM_LANGUAGE, language),
 						createEngine(
@@ -43,7 +43,7 @@ public class ExecuteNER {
 						DirectoryDataWriterFactory.PARAM_OUTPUT_DIRECTORY, modelDirectory,
 						DefaultSequenceDataWriterFactory.PARAM_DATA_WRITER_CLASS_NAME,
 						//MalletCrfStringOutcomeDataWriter.class)); // or 
-						CrfSuiteStringOutcomeDataWriter.class)*/);
+						CrfSuiteStringOutcomeDataWriter.class));
 	}
 
 	public static void trainModel(String modelDirectory) throws Exception {
@@ -51,19 +51,19 @@ public class ExecuteNER {
 
 	}
 
-	public static void classifyTestFile(String modelDirectory, File testPosFile, String language) throws ResourceInitializationException, UIMAException, IOException {
+	public static void classifyTestFile(String modelDirectory, File testNerFile, String language) throws ResourceInitializationException, UIMAException, IOException {
 		runPipeline(FilesCollectionReader.getCollectionReaderWithSuffixes(
-				testPosFile.getAbsolutePath(),
-				ConllAnnotator.CONLL_VIEW, testPosFile.getName()),
-				createEngine(ConllAnnotator.class)/*,
+				testNerFile.getAbsolutePath(),
+				ConllAnnotator.CONLL_VIEW, testNerFile.getName()),
+				createEngine(ConllAnnotator.class),
 				createEngine(SnowballStemmer.class,
 						SnowballStemmer.PARAM_LANGUAGE, language),
-						createEngine(NERAnnotator.class,
+				createEngine(NERAnnotator.class,
 				GenericJarClassifierFactory.PARAM_CLASSIFIER_JAR_PATH, 	modelDirectory+"model.jar"),
 				createEngine(AnalyzeFeatures.class,
-						AnalyzeFeatures.PARAM_INPUT_FILE, testPosFile.getAbsolutePath(),
+						AnalyzeFeatures.PARAM_INPUT_FILE, testNerFile.getAbsolutePath(),
 						AnalyzeFeatures.PARAM_TOKEN_VALUE_PATH,"pos/PosValue")
-			*/);
+			);
 	}
 
 	public static void main(String[] args) throws Exception {
