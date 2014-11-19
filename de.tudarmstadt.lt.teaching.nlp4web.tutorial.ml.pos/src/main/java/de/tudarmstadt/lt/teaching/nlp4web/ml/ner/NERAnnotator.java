@@ -112,6 +112,11 @@ public class NERAnnotator
             List<Token> tokens = selectCovered(jCas, Token.class, sentence);
             List<TokenNer> tokensNer = new ArrayList<TokenNer>();
             // TODO recuperation of TokenNer in tokens list
+            
+            for (Token token : tokens){
+                tokensNer.add((TokenNer) token);            		
+            }
+            
             for (TokenNer token : tokensNer) {
 
                 Instance<String> instance = new Instance<String>();
