@@ -94,11 +94,12 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				//set POS value and add POS to the token and to the index
 				posTag.setPosValue(pos);
 				token.setPos(posTag);
-				//set NER value and add NER to the index
-				
-				nerTag.setValue(ner);
-
 				token.addToIndexes();
+				//set NER value and add NER to the index
+				nerTag.setValue(ner);
+				nerTag.addToIndexes();
+
+				
 				logger.log(
 						Level.FINE,
 						"Token: ["

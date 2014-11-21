@@ -2,6 +2,7 @@ package de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,8 +18,15 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
 public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<Token> {
 
-	public HashMap<String, String> getEntityList(){
-		HashMap<String, String> nerValueMap = new HashMap<String, String>();
+	private HashMap<String, String> nerValueMap;
+	
+	public MatchGivenListFeatureExtractor() {
+		super();
+		initializeEntityList();
+		
+	}
+	private void initializeEntityList() {
+		nerValueMap = new HashMap<String, String>();
 		try {
 			String f = FileUtils.readFileToString(new File("src/main/resources/ner/eng.list"));
 			String[] lines = f.split("(\r\n|\n)");
@@ -26,13 +34,16 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 				String[] elements = line.split(" ");
 				if (elements.length == 2){
 					// get (IOB, Value) for NER of 1 word 
-					nerValueMap.put(elements[0], elements[1]);
+					nerValueMap.put(elements[1], elements[0]);
 				}
 				// TODO Get NER bigger than 1 word
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+	}
+	public HashMap<String, String> getEntityList(){
 		return nerValueMap;	
 	}
 	
@@ -40,14 +51,17 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 	public List<Feature> extract(JCas jcas, Token token)
 			throws CleartkExtractorException {
 		HashMap<String, String> nerValueMap = getEntityList();
-		boolean isListed = nerValueMap.containsValue(token.getCoveredText());
-		return null; //Collections.;
+		boolean isListed = nerValueMap.containsKey(token.getCoveredText());
+		if (isListed){
+			return Collections.singletonList(new Feature("MatchList" , nerValueMap.get(token.getCoveredText())+"_"+token.getCoveredText() ));			
+		} else {
+			return Collections.emptyList();			
+		}
 	}
 
 	@Override
 	public String getFeatureName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "MatchList";
 	}
 
 	

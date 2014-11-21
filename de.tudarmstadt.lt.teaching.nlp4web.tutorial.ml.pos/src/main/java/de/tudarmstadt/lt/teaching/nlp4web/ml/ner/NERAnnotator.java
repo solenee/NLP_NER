@@ -44,6 +44,7 @@ import org.cleartk.ne.type.NamedEntityMention;
 
 import com.thoughtworks.xstream.XStream;
 
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.xml.XStreamFactory;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
@@ -86,9 +87,10 @@ public class NERAnnotator
             stemExtractor = new TypePathExtractor<Token>(Token.class, "stem/value");
 
             this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
-                    new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
-                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
-                    new CharacterNgramFeatureFunction(fromRight, 0, 2));
+            		new MatchGivenListFeatureExtractor());
+//                    new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
+//                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
+//                    new CharacterNgramFeatureFunction(fromRight, 0, 2));
             // add there
             // NP & begins with a capital letter
             
@@ -113,8 +115,7 @@ public class NERAnnotator
         for (Sentence sentence : select(jCas, Sentence.class)) {
             List<Instance<String>> instances = new ArrayList<Instance<String>>();
             List<Token> tokens = selectCovered(jCas, Token.class, sentence);
-            
-            
+                     
             for (Token token : tokens) {
 
                 Instance<String> instance = new Instance<String>();
@@ -122,9 +123,10 @@ public class NERAnnotator
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
                 instance.addAll(stemExtractor.extract(jCas, token));
 
-                List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token.getBegin(), token.getEnd());
+                List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token);
+                
                 if (namedEntity.size() != 1) {
-                	System.err.println("Waaaaaaaa");
+                	System.err.println("Waaaaaaaa : namedEntity.size() = "+namedEntity.size());
                 } else {
                 	instance.setOutcome(namedEntity.get(0).getValue());
                 }
