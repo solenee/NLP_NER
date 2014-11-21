@@ -31,15 +31,14 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
  *
  *
  */
-public class AnalyzeFeatures extends JCasAnnotator_ImplBase
-{
+public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 	public static final String PARAM_TOKEN_VALUE_PATH = "TokenValuePath";
 	public static final String PARAM_INPUT_FILE = "InputFile";
 	/**
-	 * To make this class general, the path to the feature that is used
-	 * for the evaluation the tokenValuePath has to be set to the feature
-	 * e.g. for the pos value: pos/PosValue is used
-	 * (works only for token: de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token)
+	 * To make this class general, the path to the feature that is used for the
+	 * evaluation the tokenValuePath has to be set to the feature e.g. for the
+	 * pos value: pos/PosValue is used (works only for token:
+	 * de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token)
 	 */
 	@ConfigurationParameter(name = PARAM_TOKEN_VALUE_PATH, mandatory = true)
 	private String tokenValuePath;
@@ -60,7 +59,8 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase
 
 			HashMap<String, Classification> map = new HashMap<String, Classification>();
 			TypePathExtractor<Token> extractor;
-			extractor = new TypePathExtractor<Token>(Token.class, tokenValuePath);
+			extractor = new TypePathExtractor<Token>(Token.class,
+					tokenValuePath);
 			String line;
 			String[] splitLine;
 			BufferedReader reader = new BufferedReader(
@@ -75,7 +75,8 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase
 					line = reader.readLine();
 					splitLine = line.split("\\s");
 					String trueValue = splitLine[1];
-					String classifiedValue = extractor.extract(jCas, token).get(0).getValue().toString();
+					String classifiedValue = extractor.extract(jCas, token)
+							.get(0).getValue().toString();
 
 					if (splitLine[0].equals(token.getCoveredText())) {
 						if (trueValue.equals(classifiedValue)) {

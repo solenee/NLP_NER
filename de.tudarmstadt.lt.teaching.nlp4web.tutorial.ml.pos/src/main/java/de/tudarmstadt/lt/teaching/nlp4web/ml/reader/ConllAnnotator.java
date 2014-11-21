@@ -107,7 +107,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 										token.getEnd()) + "]"
 								+ token.getBegin() + "\t" + token.getEnd());
 				logger.log(
-						Level.INFO,
+						Level.FINE,
 						"NERTag: ["
 								+ docText.substring(nerTag.getBegin(),
 										nerTag.getEnd()) + "]"
