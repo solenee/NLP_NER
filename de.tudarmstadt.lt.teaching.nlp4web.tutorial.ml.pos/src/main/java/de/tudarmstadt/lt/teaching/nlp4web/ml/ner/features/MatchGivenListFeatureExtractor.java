@@ -12,6 +12,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 import org.cleartk.ml.Feature;
 import org.cleartk.ml.feature.extractor.CleartkExtractorException;
 import org.cleartk.ml.feature.extractor.NamedFeatureExtractor1;
+import org.cleartk.ml.feature.function.FeatureFunction;
 
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.NERAnnotator;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;

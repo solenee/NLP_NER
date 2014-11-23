@@ -96,7 +96,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				token.setPos(posTag);
 				token.addToIndexes();
 				//set NER value and add NER to the index
-				nerTag.setValue(ner);
+				nerTag.setValue(ner);//pos+" "+ner);
 				nerTag.addToIndexes();
 
 				

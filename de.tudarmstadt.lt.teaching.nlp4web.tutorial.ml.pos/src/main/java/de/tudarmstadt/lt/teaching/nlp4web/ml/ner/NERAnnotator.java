@@ -65,7 +65,8 @@ public class NERAnnotator
     private String featureExtractionFile = null;
 
     private FeatureExtractor1<Token> tokenFeatureExtractor;
-
+    private FeatureExtractor1<Token> databaseFeatureExtractor;
+    
     private CleartkExtractor<Token, Token> contextFeatureExtractor;
     private TypePathExtractor<Token> stemExtractor;
     
@@ -87,14 +88,16 @@ public class NERAnnotator
             stemExtractor = new TypePathExtractor<Token>(Token.class, "stem/value");
 
             this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
-            		new MatchGivenListFeatureExtractor());
+            		  new CoveredTextExtractor<Token>(), new CapitalTypeFeatureFunction());
 //                    new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
 //                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
 //                    new CharacterNgramFeatureFunction(fromRight, 0, 2));
             // add there
             // NP & begins with a capital letter
             
-
+			this.databaseFeatureExtractor = new FeatureFunctionExtractor<Token>(
+					new MatchGivenListFeatureExtractor()
+					);
             this.contextFeatureExtractor = new CleartkExtractor<Token, Token>(Token.class,
                     new CoveredTextExtractor<Token>(), new Preceding(2), new Following(2));
 
@@ -120,6 +123,7 @@ public class NERAnnotator
 
                 Instance<String> instance = new Instance<String>();
                 instance.addAll(tokenFeatureExtractor.extract(jCas, token));
+                instance.addAll(databaseFeatureExtractor.extract(jCas, token));
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
                 instance.addAll(stemExtractor.extract(jCas, token));
 
@@ -144,8 +148,11 @@ public class NERAnnotator
                 // List<NamedEntityMention> chunks = this.chunking.createChunks(jCas, tokens, outcomesTags);
                 int i = 0;
                 for (Token token : tokens) {
-                    NamedEntity ner = new NamedEntity(jCas, token.getBegin(), token.getEnd());
-                    ner.setValue(outcomes.get(i++));
+//                    NamedEntity ner = new NamedEntity(jCas, token.getBegin(), token.getEnd());
+//                    ner.setValue(outcomes.get(i++));
+                	// update NamedEntity value with the guessed one 
+                	List<NamedEntity> ner = selectCovered(jCas, NamedEntity.class, token);
+                    ner.get(0).setValue(outcomes.get(i++));
                 }
             }
         }

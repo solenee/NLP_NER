@@ -21,6 +21,7 @@ import org.cleartk.ml.feature.extractor.TypePathExtractor;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 
+import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
@@ -67,17 +68,29 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 					new FileReader(inputFile));
 			int correct = 0;
 			int tokenCount = 0;
-
+			// Consum -DOCSTART- -X- -X- O
+			//line = reader.readLine();
+			//System.out.println("1st line consumed : " + line);
+			
 			for (Sentence sentence : select(jCas, Sentence.class)) {
 				line = reader.readLine();
+				// System.out.println("line begin sentence : " + line);
+				// System.out.println("sentence : " + sentence.getCoveredText());
 				List<Token> tokens = selectCovered(jCas, Token.class, sentence);
 				for (Token token : tokens) {
+					System.out.println("token :"+token.getCoveredText());
 					line = reader.readLine();
+					System.out.println("line : " + line);
 					splitLine = line.split("\\s");
-					String trueValue = splitLine[1];
-					String classifiedValue = extractor.extract(jCas, token)
-							.get(0).getValue().toString();
-
+					String trueValue = splitLine[3];
+					 System.out.println("trueValue :"+trueValue);
+					// System.out.println("ok :)");
+//					String classifiedValue = extractor.extract(jCas, token)
+//							.get(0).getValue().toString();
+					 List<NamedEntity> ner = selectCovered(jCas, NamedEntity.class, token);
+					 String classifiedValue =  ner.get(0).getValue();
+					 System.out.println("classifiedValue :"+classifiedValue);
+					 
 					if (splitLine[0].equals(token.getCoveredText())) {
 						if (trueValue.equals(classifiedValue)) {
 							correct++;
@@ -111,7 +124,7 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			double precisionSum = 0.0;
 			double recallSum = 0.0;
 			double fmeasureSum = 0.0;
-			logger.log(Level.INFO, "Pos-Tag\tprecision\trecall\tF-measure");
+			logger.log(Level.INFO, "NER-Tag\tprecision\trecall\tF-measure");
 			for (Entry<String, Classification> e : map.entrySet()) {
 				double precision = 0.0;
 				double recall = 0.0;
