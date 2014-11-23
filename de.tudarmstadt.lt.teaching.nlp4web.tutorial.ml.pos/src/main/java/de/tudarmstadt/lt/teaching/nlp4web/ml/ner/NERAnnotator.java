@@ -88,10 +88,10 @@ public class NERAnnotator
             stemExtractor = new TypePathExtractor<Token>(Token.class, "stem/value");
 
             this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
-            		  new CoveredTextExtractor<Token>(), new CapitalTypeFeatureFunction());
+            		  new CoveredTextExtractor<Token>(), new CapitalTypeFeatureFunction(),
 //                    new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
 //                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
-//                    new CharacterNgramFeatureFunction(fromRight, 0, 2));
+            		  new CharacterNgramFeatureFunction(fromRight, 0, 2));
             // add there
             // NP & begins with a capital letter
             

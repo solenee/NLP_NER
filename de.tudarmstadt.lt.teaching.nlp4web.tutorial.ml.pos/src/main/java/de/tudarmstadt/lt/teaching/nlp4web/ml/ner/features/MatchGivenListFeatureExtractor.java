@@ -34,8 +34,8 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 			for (String line : lines){
 				String[] elements = line.split(" ");
 				if (elements.length == 2){
-					// get (IOB, Value) for NER of 1 word 
-					nerValueMap.put(elements[1], elements[0]);
+					// get (Value, IOB) for NER of 1 word 
+					nerValueMap.put(elements[1].toLowerCase(), elements[0]);
 				}
 				// TODO Get NER bigger than 1 word
 			}
@@ -52,7 +52,7 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 	public List<Feature> extract(JCas jcas, Token token)
 			throws CleartkExtractorException {
 		HashMap<String, String> nerValueMap = getEntityList();
-		boolean isListed = nerValueMap.containsKey(token.getCoveredText());
+		boolean isListed = nerValueMap.containsKey(token.getCoveredText().toLowerCase());
 		if (isListed){
 			return Collections.singletonList(new Feature("MatchList" , nerValueMap.get(token.getCoveredText())+"_"+token.getCoveredText() ));			
 		} else {

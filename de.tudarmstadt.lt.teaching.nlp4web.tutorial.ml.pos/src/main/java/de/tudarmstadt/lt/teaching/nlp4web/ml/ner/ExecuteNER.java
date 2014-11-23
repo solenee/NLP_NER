@@ -72,7 +72,7 @@ public class ExecuteNER {
 		String modelDirectory = "src/test/resources/model/";
 		String language = "en";
 		//File posTagFile=   new File("src/main/resources/pos/wsj_pos.train_100");
-		File nerTagFile=   new File("src/main/resources/ner/ner_eng_small.train");
+		File nerTagFile=   new File("src/main/resources/ner/ner_eng.train");
 		//File testPosFile = new File("src/main/resources/pos/wsj_pos.dev");
 		File testNerFile = new File("src/main/resources/ner/ner_eng_small.dev");
 		new File(modelDirectory).mkdirs();
