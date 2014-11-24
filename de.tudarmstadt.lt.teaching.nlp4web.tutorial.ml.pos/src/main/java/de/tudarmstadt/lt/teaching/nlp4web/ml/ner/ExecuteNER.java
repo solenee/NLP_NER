@@ -74,7 +74,7 @@ public class ExecuteNER {
 		//File posTagFile=   new File("src/main/resources/pos/wsj_pos.train_100");
 		File nerTagFile=   new File("src/main/resources/ner/ner_eng.train");
 		//File testPosFile = new File("src/main/resources/pos/wsj_pos.dev");
-		File testNerFile = new File("src/main/resources/ner/ner_eng_small.dev");
+		File testNerFile = new File("src/main/resources/ner/ner_eng.dev");
 		new File(modelDirectory).mkdirs();
 		writeModel(nerTagFile, modelDirectory,language);
 		trainModel(modelDirectory);

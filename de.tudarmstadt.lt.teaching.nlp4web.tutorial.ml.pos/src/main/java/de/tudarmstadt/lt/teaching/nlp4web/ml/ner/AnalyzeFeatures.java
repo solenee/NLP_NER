@@ -4,8 +4,10 @@ import static org.apache.uima.fit.util.JCasUtil.select;
 import static org.apache.uima.fit.util.JCasUtil.selectCovered;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,11 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			String[] splitLine;
 			BufferedReader reader = new BufferedReader(
 					new FileReader(inputFile));
+
+			// Ecrire dans fichier
+			FileWriter fw = new FileWriter("src/test/resources/results/ner_eng.txt");
+			BufferedWriter output = new BufferedWriter(fw);
+			
 			int correct = 0;
 			int tokenCount = 0;
 			// Consum -DOCSTART- -X- -X- O
@@ -74,6 +81,7 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			
 			for (Sentence sentence : select(jCas, Sentence.class)) {
 				line = reader.readLine();
+				output.write("\n");
 				// System.out.println("line begin sentence : " + line);
 				// System.out.println("sentence : " + sentence.getCoveredText());
 				List<Token> tokens = selectCovered(jCas, Token.class, sentence);
@@ -90,6 +98,8 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 					 List<NamedEntity> ner = selectCovered(jCas, NamedEntity.class, token);
 					 String classifiedValue =  ner.get(0).getValue();
 					 System.out.println("classifiedValue :"+classifiedValue);
+
+					 output.write(line + " " + classifiedValue + "\n");
 					 
 					if (splitLine[0].equals(token.getCoveredText())) {
 						if (trueValue.equals(classifiedValue)) {
@@ -121,6 +131,7 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 				}
 			}
 			reader.close();
+			
 			double precisionSum = 0.0;
 			double recallSum = 0.0;
 			double fmeasureSum = 0.0;
@@ -150,6 +161,8 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			logger.log(Level.INFO, "Recall:   \t" + (recallSum / map.size()));
 			logger.log(Level.INFO, "F-Measure:\t" + (fmeasureSum / map.size()));
 
+			output.flush();
+			output.close();
 		} catch (FileNotFoundException e) {
 			logger.log(Level.WARNING, e.getMessage());
 		} catch (IOException e) {
