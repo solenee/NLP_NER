@@ -86,18 +86,18 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 				// System.out.println("sentence : " + sentence.getCoveredText());
 				List<Token> tokens = selectCovered(jCas, Token.class, sentence);
 				for (Token token : tokens) {
-					System.out.println("token :"+token.getCoveredText());
+					//System.out.println("token :"+token.getCoveredText());
 					line = reader.readLine();
-					System.out.println("line : " + line);
+					//System.out.println("line : " + line);
 					splitLine = line.split("\\s");
 					String trueValue = splitLine[3];
-					 System.out.println("trueValue :"+trueValue);
+					//System.out.println("trueValue :"+trueValue);
 					// System.out.println("ok :)");
 //					String classifiedValue = extractor.extract(jCas, token)
 //							.get(0).getValue().toString();
 					 List<NamedEntity> ner = selectCovered(jCas, NamedEntity.class, token);
 					 String classifiedValue =  ner.get(0).getValue();
-					 System.out.println("classifiedValue :"+classifiedValue);
+					 //System.out.println("classifiedValue :"+classifiedValue);
 
 					 output.write(line + " " + classifiedValue + "\n");
 					 
@@ -127,7 +127,13 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 										+ splitLine[0] + "!="
 										+ token.getCoveredText() + ")");
 					}
-
+					if (!trueValue.equals(classifiedValue)){
+						logger.log(
+								Level.WARNING,
+								"=================================== \n ClassifiedValue does not match to TrueValue ("
+										+ classifiedValue + "!="
+										+ trueValue + ") for token : " + token.getCoveredText() + " \n in sentence " + sentence.getCoveredText() + "\n ================================");						
+					}
 				}
 			}
 			reader.close();

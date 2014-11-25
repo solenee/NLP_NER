@@ -14,6 +14,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.chunk.Chunk;
 
 public class ConllAnnotator extends JCasAnnotator_ImplBase {
 	public static final String CONLL_VIEW = "ConnlView";
@@ -49,6 +50,8 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 		String pos;
 		NamedEntity nerTag;
 		String ner;
+		Chunk chunkTag;
+		String chunk;
 		boolean initSentence = false;
 		StringBuffer docText = new StringBuffer();
 		for (String line : tokens) {
@@ -65,11 +68,13 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				String[] tag = line.split("\\s");
 				String word = tag[0];
 				pos = tag.length >= 2 ? tag[1] : "";
+				chunk = tag.length >= 3 ? tag[2] : "";
 				ner = tag.length >= 4 ? tag[3] : "";
 				docText.append(word);
 				if (!word.matches("^(\\p{Punct}).*")) {
 					token = new Token(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
+					chunkTag = new Chunk(docView, idx, idx + word.length());
 					nerTag = new NamedEntity(docView, idx, idx + word.length());
 					docText.append(" ");
 					idx++;
@@ -81,6 +86,7 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 					}
 					token = new Token(docView, idx, idx + word.length());
 					posTag = new POS(docView, idx, idx + word.length());
+					chunkTag = new Chunk(docView, idx, idx + word.length());
 					nerTag = new NamedEntity(docView, idx, idx + word.length());
 				}
 				//start new sentence
@@ -95,8 +101,11 @@ public class ConllAnnotator extends JCasAnnotator_ImplBase {
 				posTag.setPosValue(pos);
 				token.setPos(posTag);
 				token.addToIndexes();
+				//set Chunk value and add CHunk to the index
+				chunkTag.setChunkValue(chunk);
+				chunkTag.addToIndexes();
 				//set NER value and add NER to the index
-				nerTag.setValue(ner);//pos+" "+ner);
+				nerTag.setValue(ner);
 				nerTag.addToIndexes();
 
 				

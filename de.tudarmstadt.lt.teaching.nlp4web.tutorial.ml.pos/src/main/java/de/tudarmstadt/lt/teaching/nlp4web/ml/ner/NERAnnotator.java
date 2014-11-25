@@ -34,6 +34,7 @@ import org.cleartk.ml.feature.extractor.CleartkExtractor.Preceding;
 import org.cleartk.ml.feature.extractor.CoveredTextExtractor;
 import org.cleartk.ml.feature.extractor.FeatureExtractor1;
 import org.cleartk.ml.feature.extractor.TypePathExtractor;
+import org.cleartk.ml.feature.extractor.WhiteSpaceExtractor;
 import org.cleartk.ml.feature.function.CapitalTypeFeatureFunction;
 import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction;
 import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction.Orientation;
@@ -44,12 +45,14 @@ import org.cleartk.ne.type.NamedEntityMention;
 
 import com.thoughtworks.xstream.XStream;
 
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.xml.XStreamFactory;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.chunk.Chunk;
 
 public class NERAnnotator
     extends CleartkSequenceAnnotator<String>
@@ -66,7 +69,8 @@ public class NERAnnotator
 
     private FeatureExtractor1<Token> tokenFeatureExtractor;
     private FeatureExtractor1<Token> databaseFeatureExtractor;
-    
+    private CleartkExtractor<Token, POS> posFeatureExtractor;
+    private FeatureFunctionExtractor<Token> chunkFeatureExtractor;
     private CleartkExtractor<Token, Token> contextFeatureExtractor;
     private TypePathExtractor<Token> stemExtractor;
     
@@ -89,18 +93,24 @@ public class NERAnnotator
 
             this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
             		  new CoveredTextExtractor<Token>(), new CapitalTypeFeatureFunction(),
-//                    new CoveredTextExtractor<Token>(), new LowerCaseFeatureFunction(),
+            		  new LowerCaseFeatureFunction()
 //                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
-            		  new CharacterNgramFeatureFunction(fromRight, 0, 2));
+//            		  new CharacterNgramFeatureFunction(fromRight, 0, 2)
+            		  );
             // add there
             // NP & begins with a capital letter
-            
+                        
 			this.databaseFeatureExtractor = new FeatureFunctionExtractor<Token>(
-					new MatchGivenListFeatureExtractor()
+					new MatchGivenListFeatureExtractor(), new CapitalTypeFeatureFunction(),
+          		  new LowerCaseFeatureFunction()
 					);
             this.contextFeatureExtractor = new CleartkExtractor<Token, Token>(Token.class,
-                    new CoveredTextExtractor<Token>(), new Preceding(2), new Following(2));
-
+                    new CoveredTextExtractor<Token>(), new Preceding(3), new Following(3));
+            this.posFeatureExtractor = new CleartkExtractor<Token, POS>(POS.class,
+                    new TypePathExtractor<POS>(POS.class, "pos/PosValue"),
+                    new Preceding(2), new Following(2));
+            this.chunkFeatureExtractor = new FeatureFunctionExtractor<Token>(
+                    new ChunkExtractor());
         }
         else {// load the settings from a file
               // initialize the XStream if a xml file is given:
@@ -125,6 +135,8 @@ public class NERAnnotator
                 instance.addAll(tokenFeatureExtractor.extract(jCas, token));
                 instance.addAll(databaseFeatureExtractor.extract(jCas, token));
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
+                instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
+                instance.addAll(chunkFeatureExtractor.extract(jCas, token));
                 instance.addAll(stemExtractor.extract(jCas, token));
 
                 List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token);
