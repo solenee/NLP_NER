@@ -39,8 +39,8 @@ public class ExecuteNER {
 						SnowballStemmer.PARAM_LANGUAGE, language),
 						createEngine(
 						NERAnnotator.class,
-						NERAnnotator.PARAM_FEATURE_EXTRACTION_FILE, "src/main/resources/ner/feature.xml",
-						NERAnnotator.PARAM_CLEARTK_EXTRACTION_FILE, "src/main/resources/ner/context.xml",
+						//NERAnnotator.PARAM_FEATURE_EXTRACTION_FILE, "src/main/resources/ner/feature.xml",
+						//NERAnnotator.PARAM_CLEARTK_EXTRACTION_FILE, "src/main/resources/ner/context.xml",
 						CleartkSequenceAnnotator.PARAM_IS_TRAINING,true,
 						DirectoryDataWriterFactory.PARAM_OUTPUT_DIRECTORY, modelDirectory,
 						DefaultSequenceDataWriterFactory.PARAM_DATA_WRITER_CLASS_NAME,

@@ -27,7 +27,6 @@ import org.apache.uima.resource.ResourceInitializationException;
  import org.cleartk.classifier.feature.function.NumericTypeFeatureFunction;*/
 import org.cleartk.ml.CleartkSequenceAnnotator;
 import org.cleartk.ml.Instance;
-import org.cleartk.ml.chunking.BioChunking;
 import org.cleartk.ml.feature.extractor.CleartkExtractor;
 import org.cleartk.ml.feature.extractor.CleartkExtractor.Following;
 import org.cleartk.ml.feature.extractor.CleartkExtractor.Preceding;
@@ -41,13 +40,11 @@ import org.cleartk.ml.feature.function.CharacterNgramFeatureFunction.Orientation
 import org.cleartk.ml.feature.function.FeatureFunctionExtractor;
 import org.cleartk.ml.feature.function.LowerCaseFeatureFunction;
 import org.cleartk.ml.feature.function.NumericTypeFeatureFunction;
-import org.cleartk.ne.type.NamedEntityMention;
 
 import com.thoughtworks.xstream.XStream;
 
-import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkValueExtractor;
-import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkPOSValueExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureFunction;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.xml.XStreamFactory;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
@@ -75,7 +72,7 @@ public class NERAnnotator
     private FeatureExtractor1<Token> tokenFeatureExtractor;
 //    private FeatureExtractor1<Token> databaseFeatureExtractor; // replaced by a function in tokenFeatureExtractor
     private CleartkExtractor<Token, POS> posFeatureExtractor;
-    private FeatureExtractor1<Token> chunkFeatureExtractor;
+    private FeatureExtractor1<Token> otherAnnotationsExtractor;
     private CleartkExtractor<Chunk, Chunk> chunkContextFeatureExtractor;
     private CleartkExtractor<Token, Token> contextFeatureExtractor;
 //    private TypePathExtractor<Token> stemExtractor; // not useful for english
@@ -104,9 +101,10 @@ public class NERAnnotator
 			// new LowerCaseFeatureFunction()
 			// );
 
-			// Features with chunks
-			this.chunkFeatureExtractor = new FeatureFunctionExtractor<Token>(
-					new ChunkExtractor());
+			// TODO Serialize this extractor
+			// Given Chunk and POS value for each Token as a feature
+			this.otherAnnotationsExtractor = new FeatureFunctionExtractor<Token>(
+					new ChunkPOSValueExtractor());
 		} else {
 			// load the settings from a file
 			// initialize the XStream if a xml file is given:
@@ -115,7 +113,7 @@ public class NERAnnotator
 					.fromXML(new File(featureExtractionFile));
 			System.out.println("tokenFeats.size() = " + tokenFeats.size());
 			tokenFeatureExtractor = tokenFeats.get(0);
-			chunkFeatureExtractor = tokenFeats.get(1);
+			otherAnnotationsExtractor = tokenFeats.get(1);
 		}
 
 		// add cleartk extractors
@@ -142,7 +140,6 @@ public class NERAnnotator
 		this.posFeatureExtractor = new CleartkExtractor<Token, POS>(POS.class,
 				new TypePathExtractor<POS>(POS.class, "pos/PosValue"),
 				new Preceding(2), new Following(2));
-		// TODO add posValue as feature ?
 
 	}
 
@@ -159,10 +156,10 @@ public class NERAnnotator
                 Instance<String> instance = new Instance<String>();
 
                 instance.addAll(tokenFeatureExtractor.extract(jCas, token));
+                instance.addAll(otherAnnotationsExtractor.extract(jCas, token));
 //                instance.addAll(databaseFeatureExtractor.extract(jCas, token));
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
                 instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
-                instance.addAll(chunkFeatureExtractor.extract(jCas, token));
 //                instance.addAll(stemExtractor.extract(jCas, token));
                 List<Chunk> chunks = selectCovered(jCas, Chunk.class, token);
                 if (chunks.size() != 1) {
