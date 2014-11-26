@@ -157,6 +157,7 @@ public class NERAnnotator
             for (Token token : tokens) {
 
                 Instance<String> instance = new Instance<String>();
+
                 instance.addAll(tokenFeatureExtractor.extract(jCas, token));
 //                instance.addAll(databaseFeatureExtractor.extract(jCas, token));
                 instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));

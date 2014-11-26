@@ -58,8 +58,7 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 		if (isListed){
 			return Collections.singletonList(new Feature(getFeatureName() , nerValueMap.get(normalizedValue)+"_"+token.getCoveredText() ));			
 		} else {
-			return Collections.emptyList();			
-		}
+			return Collections.singletonList(new Feature(getFeatureName() , "O_"+token.getCoveredText() ));		}
 	}
 
 	@Override
