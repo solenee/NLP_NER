@@ -2,6 +2,7 @@ package de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,16 +18,24 @@ import org.cleartk.ml.feature.function.FeatureFunction;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.NERAnnotator;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
-public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<Token> {
+/** 
+ * 
+ * Should be used with CoveredTextExtractor as Extractor.
+ *
+ */
+public class MatchGivenListFeatureFunction implements FeatureFunction {
 
+	public static final String DEFAULT_NAME = "MatchList"; 
+	
 	// TODO have a different list for each IOB type and generated eventually many features ?
+	// To cover the case where a name can be ORG and PER e.g. 
 	private HashMap<String, String> nerValueMap;
 	
-	public MatchGivenListFeatureExtractor() {
+	public MatchGivenListFeatureFunction() {
 		super();
 		initializeEntityList();
-		
 	}
+
 	private void initializeEntityList() {
 		nerValueMap = new HashMap<String, String>();
 		try {
@@ -48,24 +57,32 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 	public HashMap<String, String> getEntityList(){
 		return nerValueMap;	
 	}
-	
+
 	@Override
-	public List<Feature> extract(JCas jcas, Token token)
-			throws CleartkExtractorException {
-		HashMap<String, String> nerValueMap = getEntityList();
-		String normalizedValue =  token.getCoveredText().toLowerCase();
-		boolean isListed = nerValueMap.containsKey(normalizedValue);
-		if (isListed){
-			return Collections.singletonList(new Feature(getFeatureName() , nerValueMap.get(normalizedValue)+"_"+token.getCoveredText() ));			
+	public List<Feature> apply(Feature input) {
+		Object featureValue = input.getValue();
+		if (featureValue instanceof String) {
+
+			HashMap<String, String> nerValueMap = getEntityList();
+			String tokenText = (String) featureValue;
+			String normalizedValue = tokenText.toLowerCase();
+			boolean isListed = nerValueMap.containsKey(normalizedValue);
+			if (isListed) {
+				List<Feature> result = new ArrayList<Feature>();
+				result.add(new Feature(DEFAULT_NAME,
+						nerValueMap.get(normalizedValue) + "_"+tokenText)
+						);
+				result.add(new Feature(DEFAULT_NAME+"_LowerCase",
+						nerValueMap.get(normalizedValue) + "_"+normalizedValue)
+						);
+				return result;
+			} else {
+				return Collections.emptyList();
+			}
 		} else {
-			return Collections.singletonList(new Feature(getFeatureName() , "O_"+token.getCoveredText() ));		}
+			return Collections.emptyList();
+		}
 	}
-
-	@Override
-	public String getFeatureName() {
-		return "MatchList";
-	}
-
 	
 
 	

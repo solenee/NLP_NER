@@ -25,6 +25,11 @@ import org.cleartk.ml.feature.extractor.WhiteSpaceExtractor;
 
 import com.thoughtworks.xstream.XStream;
 
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkValueExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureFunction;
+
 public class XStreamFactory {
 	public static XStream createXStream() {
 		//define alias so the xml file can be read easier
@@ -57,6 +62,13 @@ public class XStreamFactory {
 		xstream.alias("Ngram", Ngram.class);
 
 		xstream.alias("list", ArrayList.class);
+		
+		// our own features
+		xstream.alias("ChunkExtractor", ChunkExtractor.class);
+		xstream.alias("ChunkValueExtractor", ChunkValueExtractor.class);
+		xstream.alias("MatchGivenListFeatureExtractor", MatchGivenListFeatureExtractor.class);
+		xstream.alias("MatchGivenListFeatureFunction", MatchGivenListFeatureFunction.class);
+		
 		return xstream;
 	}
 }

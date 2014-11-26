@@ -1,1 +1,10 @@
+<<<<<<< HEAD
 /target/
+=======
+/bin
+/target
+*.xml
+/.settings
+/src/test/resources/results/ner_eng.txt
+/src/main/resources
+>>>>>>> 407c267b95699f8011057088bfc49853f30d713a

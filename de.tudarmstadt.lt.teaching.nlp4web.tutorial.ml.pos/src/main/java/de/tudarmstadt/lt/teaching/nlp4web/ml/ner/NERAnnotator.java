@@ -46,7 +46,9 @@ import org.cleartk.ne.type.NamedEntityMention;
 import com.thoughtworks.xstream.XStream;
 
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.ChunkValueExtractor;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureExtractor;
+import de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features.MatchGivenListFeatureFunction;
 import de.tudarmstadt.lt.teaching.nlp4web.ml.xml.XStreamFactory;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
@@ -59,6 +61,7 @@ public class NERAnnotator
 {
 
     public static final String PARAM_FEATURE_EXTRACTION_FILE = "FeatureExtractionFile";
+    public static final String PARAM_CLEARTK_EXTRACTION_FILE = "CleartkExtractionFile";
 
     /**
      * if a feature extraction/context extractor filename is given the xml file is parsed and the
@@ -66,60 +69,82 @@ public class NERAnnotator
      */
     @ConfigurationParameter(name = PARAM_FEATURE_EXTRACTION_FILE, mandatory = false)
     private String featureExtractionFile = null;
+    @ConfigurationParameter(name = PARAM_CLEARTK_EXTRACTION_FILE, mandatory = false)
+    private String cleartkExtractionFile = null;
 
     private FeatureExtractor1<Token> tokenFeatureExtractor;
-    private FeatureExtractor1<Token> databaseFeatureExtractor;
+//    private FeatureExtractor1<Token> databaseFeatureExtractor; // replaced by a function in tokenFeatureExtractor
     private CleartkExtractor<Token, POS> posFeatureExtractor;
-    private FeatureFunctionExtractor<Token> chunkFeatureExtractor;
+    private FeatureExtractor1<Token> chunkFeatureExtractor;
+    private CleartkExtractor<Chunk, Chunk> chunkContextFeatureExtractor;
     private CleartkExtractor<Token, Token> contextFeatureExtractor;
-    private TypePathExtractor<Token> stemExtractor;
-    
-	private BioChunking<Token, NamedEntityMention> chunking = new BioChunking<Token, NamedEntityMention>(
-	        Token.class,
-	        NamedEntityMention.class,
-	        "mentionType");
+//    private TypePathExtractor<Token> stemExtractor; // not useful for english
 
     @SuppressWarnings("unchecked")
-    @Override
-    public void initialize(UimaContext context)
-        throws ResourceInitializationException
-    {
-        super.initialize(context);
-        // add feature extractors
-        if (featureExtractionFile == null) {
-            CharacterNgramFeatureFunction.Orientation fromRight = Orientation.RIGHT_TO_LEFT;
+	@Override
+	public void initialize(UimaContext context)
+			throws ResourceInitializationException {
+		super.initialize(context);
 
-            stemExtractor = new TypePathExtractor<Token>(Token.class, "stem/value");
+		// add feature extractors
+		if (featureExtractionFile == null) {
 
-            this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
-            		  new CoveredTextExtractor<Token>(), new CapitalTypeFeatureFunction(),
-            		  new LowerCaseFeatureFunction()
-//                    new CapitalTypeFeatureFunction(), new NumericTypeFeatureFunction(),
-//            		  new CharacterNgramFeatureFunction(fromRight, 0, 2)
-            		  );
-            // add there
-            // NP & begins with a capital letter
-                        
-			this.databaseFeatureExtractor = new FeatureFunctionExtractor<Token>(
-					new MatchGivenListFeatureExtractor(), new CapitalTypeFeatureFunction(),
-          		  new LowerCaseFeatureFunction()
-					);
-            this.contextFeatureExtractor = new CleartkExtractor<Token, Token>(Token.class,
-                    new CoveredTextExtractor<Token>(), new Preceding(3), new Following(3));
-            this.posFeatureExtractor = new CleartkExtractor<Token, POS>(POS.class,
-                    new TypePathExtractor<POS>(POS.class, "pos/PosValue"),
-                    new Preceding(2), new Following(2));
-            this.chunkFeatureExtractor = new FeatureFunctionExtractor<Token>(
-                    new ChunkExtractor());
-        }
-        else {// load the settings from a file
-              // initialize the XStream if a xml file is given:
-            XStream xstream = XStreamFactory.createXStream();
-            tokenFeatureExtractor = (FeatureExtractor1<Token>) xstream.fromXML(new File(
-                    featureExtractionFile));
-        }
+			// Features with token covered text
+			this.tokenFeatureExtractor = new FeatureFunctionExtractor<Token>(
+					new CoveredTextExtractor<Token>(),
+					new CapitalTypeFeatureFunction(),
+					new LowerCaseFeatureFunction(),
+					new MatchGivenListFeatureFunction());
 
-    }
+			// Replaced by a function in tokenFeatureExtractor
+			// this.databaseFeatureExtractor = new
+			// FeatureFunctionExtractor<Token>(
+			// new MatchGivenListFeatureExtractor(), new
+			// CapitalTypeFeatureFunction(),
+			// new LowerCaseFeatureFunction()
+			// );
+
+			// Features with chunks
+			this.chunkFeatureExtractor = new FeatureFunctionExtractor<Token>(
+					new ChunkExtractor());
+		} else {
+			// load the settings from a file
+			// initialize the XStream if a xml file is given:
+			XStream xstream = XStreamFactory.createXStream();
+			List<FeatureExtractor1<Token>> tokenFeats = (List<FeatureExtractor1<Token>>) xstream
+					.fromXML(new File(featureExtractionFile));
+			System.out.println("tokenFeats.size() = " + tokenFeats.size());
+			tokenFeatureExtractor = tokenFeats.get(0);
+			chunkFeatureExtractor = tokenFeats.get(1);
+		}
+
+		// add cleartk extractors
+		if (cleartkExtractionFile == null) {
+			this.contextFeatureExtractor = new CleartkExtractor<Token, Token>(
+					Token.class, new CoveredTextExtractor<Token>(),
+					new Preceding(3), new Following(3));
+		} else {
+			// load the settings from a file
+			// initialize the XStream if a xml file is given:
+			XStream xstream = XStreamFactory.createXStream();
+			List<CleartkExtractor<Token, Token>> contextFeats = (List<CleartkExtractor<Token, Token>>) xstream
+					.fromXML(new File(cleartkExtractionFile));
+			System.out.println("contextFeats.size() = " + contextFeats.size());
+			this.contextFeatureExtractor = contextFeats.get(0);
+		}
+
+		// TODO Serialize these extractors
+		// Context features with Chunk
+		this.chunkContextFeatureExtractor = new CleartkExtractor<Chunk, Chunk>(
+				Chunk.class, new ChunkValueExtractor(), new Preceding(2),
+				new Following(2));
+		// Context features with POS
+		this.posFeatureExtractor = new CleartkExtractor<Token, POS>(POS.class,
+				new TypePathExtractor<POS>(POS.class, "pos/PosValue"),
+				new Preceding(2), new Following(2));
+		// TODO add posValue as feature ?
+
+	}
 
     @Override
     public void process(JCas jCas)
@@ -132,20 +157,27 @@ public class NERAnnotator
             for (Token token : tokens) {
 
                 Instance<String> instance = new Instance<String>();
-                //instance.addAll(tokenFeatureExtractor.extract(jCas, token));
-                instance.addAll(databaseFeatureExtractor.extract(jCas, token));
-                //instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
-                //instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
-                //instance.addAll(chunkFeatureExtractor.extract(jCas, token));
-                //instance.addAll(stemExtractor.extract(jCas, token));
 
-                List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token);
+                instance.addAll(tokenFeatureExtractor.extract(jCas, token));
+//                instance.addAll(databaseFeatureExtractor.extract(jCas, token));
+                instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
+                instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
+                instance.addAll(chunkFeatureExtractor.extract(jCas, token));
+//                instance.addAll(stemExtractor.extract(jCas, token));
+                List<Chunk> chunks = selectCovered(jCas, Chunk.class, token);
+                if (chunks.size() != 1) {
+                	System.err.println("Oups : chunks.size() = "+chunks.size());
+                } else {
+                	 instance.addAll(chunkContextFeatureExtractor.extractWithin(jCas, chunks.get(0), sentence));
+                }
                 
+                List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token);
                 if (namedEntity.size() != 1) {
                 	System.err.println("Waaaaaaaa : namedEntity.size() = "+namedEntity.size());
                 } else {
                 	instance.setOutcome(namedEntity.get(0).getValue());
                 }
+
                 // add the instance to the list !!!
                 instances.add(instance);
             }
@@ -154,14 +186,10 @@ public class NERAnnotator
                 this.dataWriter.write(instances);
             }
             else {
-            	// get the predicted BIO outcome labels from the classifier
+            	// get the predicted IOB outcome labels from the classifier
                 List<String> outcomes = this.classify(instances);
-               	// create the NamedEntityMention annotations in the CAS
-                // List<NamedEntityMention> chunks = this.chunking.createChunks(jCas, tokens, outcomesTags);
                 int i = 0;
                 for (Token token : tokens) {
-//                    NamedEntity ner = new NamedEntity(jCas, token.getBegin(), token.getEnd());
-//                    ner.setValue(outcomes.get(i++));
                 	// update NamedEntity value with the guessed one 
                 	List<NamedEntity> ner = selectCovered(jCas, NamedEntity.class, token);
                     ner.get(0).setValue(outcomes.get(i++));

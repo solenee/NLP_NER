@@ -1,9 +1,6 @@
 package de.tudarmstadt.lt.teaching.nlp4web.ml.ner.features;
 
-import static org.apache.uima.fit.util.JCasUtil.selectCovered;
-
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.uima.jcas.JCas;
@@ -11,17 +8,15 @@ import org.cleartk.ml.Feature;
 import org.cleartk.ml.feature.extractor.CleartkExtractorException;
 import org.cleartk.ml.feature.extractor.NamedFeatureExtractor1;
 
-import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.chunk.Chunk;
 
-public class ChunkExtractor implements NamedFeatureExtractor1<Token> {
+public class ChunkValueExtractor implements NamedFeatureExtractor1<Chunk> {
 
 	@Override
-	public List<Feature> extract(JCas view, Token focusAnnotation)
+	public List<Feature> extract(JCas view, Chunk chunk)
 			throws CleartkExtractorException {
-		List<Chunk> chunks = selectCovered(view, Chunk.class, focusAnnotation);
-		if (chunks.size() == 1) {
-			return Collections.singletonList(new Feature(getFeatureName(),	chunks.get(0).getChunkValue()));
+		if (chunk != null) {
+			return Collections.singletonList(new Feature(getFeatureName(),	chunk.getChunkValue()));
 		} else {
 			return Collections.emptyList();
 		}
@@ -29,7 +24,7 @@ public class ChunkExtractor implements NamedFeatureExtractor1<Token> {
 
 	@Override
 	public String getFeatureName() {
-		return "Chunk";
+		return "ChunkValue";
 	}
 
 }
