@@ -69,13 +69,14 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			BufferedReader reader = new BufferedReader(
 					new FileReader(inputFile));
 
-			// Ecrire dans fichier
+			// Write in the file
 			FileWriter fw = new FileWriter("src/test/resources/results/ner_eng.txt");
 			BufferedWriter output = new BufferedWriter(fw);
 			
 			int correct = 0;
 			int tokenCount = 0;
-			// Consum -DOCSTART- -X- -X- O
+			int bToken = 0; /**/
+			// Consume -DOCSTART- -X- -X- O
 			//line = reader.readLine();
 			//System.out.println("1st line consumed : " + line);
 			
@@ -102,9 +103,13 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 					 output.write(line + " " + classifiedValue + "\n");
 					 
 					if (splitLine[0].equals(token.getCoveredText())) {
+						/**/
+						if (trueValue.startsWith("B"))
+							bToken++;
+						/**/
 						if (trueValue.equals(classifiedValue)) {
 							correct++;
-
+							
 							if (!map.containsKey(trueValue)) {
 								map.put(trueValue, new Classification());
 							}
@@ -167,6 +172,7 @@ public class AnalyzeFeatures extends JCasAnnotator_ImplBase {
 			logger.log(Level.INFO, "Recall:   \t" + (recallSum / map.size()));
 			logger.log(Level.INFO, "F-Measure:\t" + (fmeasureSum / map.size()));
 
+			/**/logger.log(Level.INFO, "Percentage of token with label B :  "+ (bToken / tokenCount));
 			output.flush();
 			output.close();
 		} catch (FileNotFoundException e) {

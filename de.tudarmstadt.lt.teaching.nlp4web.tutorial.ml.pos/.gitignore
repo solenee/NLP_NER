@@ -3,4 +3,4 @@
 *.xml
 /.settings
 /src/test/resources/results/ner_eng.txt
-/src/main/resources/
+/src/main/resources
