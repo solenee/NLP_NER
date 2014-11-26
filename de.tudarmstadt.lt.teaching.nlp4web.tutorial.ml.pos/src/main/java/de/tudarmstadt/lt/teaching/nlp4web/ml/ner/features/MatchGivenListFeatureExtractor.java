@@ -54,10 +54,9 @@ public class MatchGivenListFeatureExtractor implements NamedFeatureExtractor1<To
 		HashMap<String, String> nerValueMap = getEntityList();
 		boolean isListed = nerValueMap.containsKey(token.getCoveredText().toLowerCase());
 		if (isListed){
-			return Collections.singletonList(new Feature("MatchList" , nerValueMap.get(token.getCoveredText())+"_"+token.getCoveredText() ));			
+			return Collections.singletonList(new Feature("MatchList" , nerValueMap.get(token.getCoveredText().toLowerCase())+"_"+token.getCoveredText() ));			
 		} else {
-			return Collections.emptyList();			
-		}
+			return Collections.singletonList(new Feature("MatchList" , "O_"+token.getCoveredText() ));		}
 	}
 
 	@Override

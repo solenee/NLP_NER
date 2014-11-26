@@ -132,12 +132,12 @@ public class NERAnnotator
             for (Token token : tokens) {
 
                 Instance<String> instance = new Instance<String>();
-                instance.addAll(tokenFeatureExtractor.extract(jCas, token));
+                //instance.addAll(tokenFeatureExtractor.extract(jCas, token));
                 instance.addAll(databaseFeatureExtractor.extract(jCas, token));
-                instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
-                instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
-                instance.addAll(chunkFeatureExtractor.extract(jCas, token));
-                instance.addAll(stemExtractor.extract(jCas, token));
+                //instance.addAll(contextFeatureExtractor.extractWithin(jCas, token, sentence));
+                //instance.addAll(posFeatureExtractor.extractWithin(jCas, token, sentence));
+                //instance.addAll(chunkFeatureExtractor.extract(jCas, token));
+                //instance.addAll(stemExtractor.extract(jCas, token));
 
                 List<NamedEntity> namedEntity = selectCovered(jCas, NamedEntity.class, token);
                 
