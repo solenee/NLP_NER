@@ -1,0 +1,6 @@
+/bin
+/target
+*.xml
+/.settings
+/src/test/resources/results/ner_eng.txt
+/src/main/resources/
